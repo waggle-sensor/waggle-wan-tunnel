@@ -53,15 +53,15 @@ def main():
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
 
-    logging.info("removing any existing sshuttle state...")
+    logging.info("removing any existing sshuttle state")
     remove_existing_sshuttle_state()
 
-    logging.info("running sshuttle...")
+    logging.info("running sshuttle")
     run([
         "sshuttle",
         "-e", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
-        "-x", f"{bk_ip}/16",  # tunnel cidr
-        "-x", "10.31.81.0/24",  # lan cidr
+        "-x", f"{bk_ip}/16",   # tunnel cidr
+        "-x", "10.31.81.0/24", # lan cidr
         "-x", "10.42.0.0/16",  # k3s pod cidr
         "-x", "10.43.0.0/16",  # k3s svc cidr
         "-r", f"{bk_user}@{bk_host}:{bk_port}",
