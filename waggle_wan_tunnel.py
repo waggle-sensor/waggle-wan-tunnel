@@ -29,6 +29,7 @@ def remove_stale_sshuttle_state():
 def main():
     remove_stale_sshuttle_state()
 
+    # get node and reverse tunnel config 
     node_id = Path("/etc/waggle/node-id").read_text().strip()
 
     config = ConfigParser()
@@ -37,12 +38,12 @@ def main():
     bk_host = section["host"]
     bk_port = section["port"]
     bk_key = section["key"]
-    bk_user = f"node-{node_id}"
     ssh_options = section.get("ssh-options", "")
     ssh_keepalive_interval = section.getint("keepalive-interval", 60)
     ssh_keepalive_count = section.getint("keepalive-count", 3)
 
     bk_ip = gethostbyname(bk_host)
+    bk_user = f"node-{node_id}"
 
     sshuttle_cmd = [
         "sshuttle",
@@ -54,7 +55,6 @@ def main():
         "-r", f"{bk_user}@{bk_host}:{bk_port}",
         "0/0",
     ]
-
     print("running", " \\\n\t".join(map(repr, sshuttle_cmd)), flush=True)
     subprocess.run(sshuttle_cmd, check=True)
 
