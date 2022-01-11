@@ -23,8 +23,6 @@ def remove_stale_sshuttle_state():
         print("removing chain", chain, flush=True)
         subprocess.check_call(["iptables", "-t", "nat", "-X", chain])
 
-    time.sleep(3)
-
     print("done", flush=True)
 
 
