@@ -53,7 +53,7 @@ def scan_sshuttle_chains_and_rules(s):
     return chains, rules
 
 
-def run_sshuttle():
+def run_sshuttle(debug=False):
     # get node and reverse tunnel config
     node_id = Path("/etc/waggle/node-id").read_text().strip()
 
@@ -70,9 +70,15 @@ def run_sshuttle():
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
 
+    extra_args = []
+
+    if debug:
+        extra_args += ["-v"]
+
     run([
         "sshuttle",
-        "-l", "12300",
+        *[extra_args],
+        "-l", "127.0.0.1:12300",
         "-e", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
         "-x", f"{bk_ip}/16",   # tunnel cidr
         "-x", "10.31.81.0/24", # lan cidr
@@ -103,7 +109,7 @@ def main():
 
     try:
         logging.info("running sshuttle")
-        run_sshuttle()
+        run_sshuttle(debug=args.debug)
     finally:
         logging.info("cleaning up any lingering sshuttle state")
         remove_existing_sshuttle_state()
