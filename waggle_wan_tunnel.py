@@ -77,7 +77,7 @@ def run_sshuttle(debug=False):
 
     run([
         "sshuttle",
-        *[extra_args],
+        *extra_args,
         "-l", "127.0.0.1:12300",
         "-e", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
         "-x", f"{bk_ip}/16",   # tunnel cidr
