@@ -9,17 +9,48 @@ import logging
 
 
 def remove_existing_sshuttle_state():
-    output = subprocess.check_output(["iptables-save", "-t", "nat"]).decode()
-    chains = re.findall(":(sshuttle-\d+)", output)
-    rules = re.findall("-A(.*sshuttle.*)", output)
+    remove_sshuttle_proc()
+    remove_sshuttle_iptables()
+
+
+def remove_sshuttle_proc():
+    pids = get_sshuttle_pids()
+
+    for pid in pids:
+        logging.debug("killing pid: %s", pid)
+        subprocess.check_call(["kill", pid])
+
+
+def get_sshuttle_pids():
+    return scan_sshuttle_pids(
+        subprocess.check_output(["ps", "-A", "-o", "comm,pid"]).decode())
+
+
+def scan_sshuttle_pids(s):
+    return re.findall("sshuttle\s+(\d+)", s)
+
+
+def remove_sshuttle_iptables():
+    chains, rules = get_sshuttle_chains_and_rules()
 
     for rule in rules:
         logging.debug("removing rule: %s", rule)
         subprocess.check_call(["iptables", "-t", "nat", "-D"] + rule.split())
-    
+
     for chain in chains:
         logging.debug("removing chain: %s", chain)
         subprocess.check_call(["iptables", "-t", "nat", "-X", chain])
+
+
+def get_sshuttle_chains_and_rules():
+    return scan_sshuttle_chains_and_rules(
+        subprocess.check_output(["iptables-save", "-t", "nat"]).decode())
+
+
+def scan_sshuttle_chains_and_rules(s):
+    chains = re.findall(":(sshuttle-\d+)", s)
+    rules = re.findall("-A\s+(.*sshuttle.*)", s)
+    return chains, rules
 
 
 def run(cmd):
@@ -37,7 +68,7 @@ def main():
         format="%(asctime)s %(message)s",
         datefmt="%Y/%m/%d %H:%M:%S")
 
-    # get node and reverse tunnel config 
+    # get node and reverse tunnel config
     node_id = Path("/etc/waggle/node-id").read_text().strip()
 
     config = ConfigParser()
@@ -53,12 +84,13 @@ def main():
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
 
-    logging.info("removing any existing sshuttle state")
-    remove_existing_sshuttle_state()
+    # logging.info("removing any existing sshuttle state")
+    # remove_existing_sshuttle_state()
 
     logging.info("running sshuttle")
     run([
         "sshuttle",
+        "-l", "12300",
         "-e", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
         "-x", f"{bk_ip}/16",   # tunnel cidr
         "-x", "10.31.81.0/24", # lan cidr
