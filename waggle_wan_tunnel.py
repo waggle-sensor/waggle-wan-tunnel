@@ -35,7 +35,7 @@ def remove_sshuttle_iptables():
 
     for rule in rules:
         logging.debug("removing rule: %s", rule)
-        subprocess.check_call(["iptables", "-t", "nat", "-D"] + rule.split())
+        subprocess.check_call(["iptables", "-t", "nat", "-D"] + rule)
 
     for chain in chains:
         logging.debug("removing chain: %s", chain)
@@ -49,7 +49,7 @@ def get_sshuttle_chains_and_rules():
 
 def scan_sshuttle_chains_and_rules(s):
     chains = re.findall(":(sshuttle-\d+)", s)
-    rules = re.findall("-A\s+(.*sshuttle.*)", s)
+    rules = [s.split() for s in re.findall("-A\s+(.*sshuttle.*)", s)]
     return chains, rules
 
 
@@ -73,18 +73,18 @@ def run_sshuttle(debug=False):
     extra_args = []
 
     if debug:
-        extra_args += ["-v"]
+        extra_args += ["--verbose"]
 
     run([
         "sshuttle",
         *extra_args,
-        "-l", "127.0.0.1:12300",
-        "-e", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
-        "-x", f"{bk_ip}/16",   # tunnel cidr
-        "-x", "10.31.81.0/24", # lan cidr
-        "-x", "10.42.0.0/16",  # k3s pod cidr
-        "-x", "10.43.0.0/16",  # k3s svc cidr
-        "-r", f"{bk_user}@{bk_host}:{bk_port}",
+        "--listen", "127.0.0.1:12300",
+        "--ssh-cmd", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
+        "--exclude", f"{bk_ip}/16",   # tunnel cidr
+        "--exclude", "10.31.81.0/24", # lan cidr
+        "--exclude", "10.42.0.0/16",  # k3s pod cidr
+        "--exclude", "10.43.0.0/16",  # k3s svc cidr
+        "--remote", f"{bk_user}@{bk_host}:{bk_port}",
         "0/0",
     ])
 

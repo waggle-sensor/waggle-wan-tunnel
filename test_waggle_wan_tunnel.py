@@ -142,20 +142,20 @@ class TestProgram(unittest.TestCase):
         ])
 
         self.assertCountEqual(rules, [
-            "PREROUTING -j sshuttle-12300",
-            "OUTPUT -j sshuttle-12300",
-            "sshuttle-12300 -d 10.31.81.0/24 -p tcp -j RETURN",
-            "sshuttle-12300 -d 192.5.0.0/16 -p tcp -j RETURN",
-            "sshuttle-12300 -d 10.42.0.0/16 -p tcp -j RETURN",
-            "sshuttle-12300 -d 10.43.0.0/16 -p tcp -j RETURN",
-            "sshuttle-12300 -p tcp -m ttl ! --ttl-eq 42 -j REDIRECT --to-ports 12300",
-            "PREROUTING -j sshuttle-12301",
-            "OUTPUT -j sshuttle-12301",
-            "sshuttle-12301 -d 10.31.81.0/24 -p tcp -j RETURN",
-            "sshuttle-12301 -d 192.5.0.0/16 -p tcp -j RETURN",
-            "sshuttle-12301 -d 10.42.0.0/16 -p tcp -j RETURN",
-            "sshuttle-12301 -d 10.43.0.0/16 -p tcp -j RETURN",
-            "sshuttle-12301 -p tcp -m ttl ! --ttl-eq 42 -j REDIRECT --to-ports 12301",
+            ["PREROUTING", "-j", "sshuttle-12300"],
+            ["OUTPUT", "-j", "sshuttle-12300"],
+            ["sshuttle-12300", "-d", "10.31.81.0/24", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12300", "-d", "192.5.0.0/16", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12300", "-d", "10.42.0.0/16", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12300", "-d", "10.43.0.0/16", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12300", "-p", "tcp", "-m", "ttl", "!", "--ttl-eq", "42", "-j", "REDIRECT", "--to-ports", "12300"],
+            ["PREROUTING", "-j", "sshuttle-12301"],
+            ["OUTPUT", "-j", "sshuttle-12301"],
+            ["sshuttle-12301", "-d", "10.31.81.0/24", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12301", "-d", "192.5.0.0/16", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12301", "-d", "10.42.0.0/16", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12301", "-d", "10.43.0.0/16", "-p", "tcp", "-j", "RETURN"],
+            ["sshuttle-12301", "-p", "tcp", "-m", "ttl", "!", "--ttl-eq", "42", "-j", "REDIRECT", "--to-ports", "12301"],
         ])
 
 
