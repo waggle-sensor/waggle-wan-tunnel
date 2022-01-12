@@ -53,21 +53,7 @@ def scan_sshuttle_chains_and_rules(s):
     return chains, rules
 
 
-def run(cmd):
-    logging.debug("run %s", " \\\n\t".join(map(repr, cmd)))
-    subprocess.run(cmd, check=True)
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", action="store_true", help="enable verbose logging")
-    args = parser.parse_args()
-
-    logging.basicConfig(
-        level=logging.DEBUG if args.debug else logging.INFO,
-        format="%(asctime)s %(message)s",
-        datefmt="%Y/%m/%d %H:%M:%S")
-
+def run_sshuttle():
     # get node and reverse tunnel config
     node_id = Path("/etc/waggle/node-id").read_text().strip()
 
@@ -84,10 +70,6 @@ def main():
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
 
-    # logging.info("removing any existing sshuttle state")
-    # remove_existing_sshuttle_state()
-
-    logging.info("running sshuttle")
     run([
         "sshuttle",
         "-l", "12300",
@@ -99,6 +81,32 @@ def main():
         "-r", f"{bk_user}@{bk_host}:{bk_port}",
         "0/0",
     ])
+
+
+def run(cmd):
+    logging.debug("run %s", " \\\n\t".join(map(repr, cmd)))
+    subprocess.run(cmd, check=True)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug", action="store_true", help="enable verbose logging")
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.debug else logging.INFO,
+        format="%(asctime)s %(message)s",
+        datefmt="%Y/%m/%d %H:%M:%S")
+
+    logging.info("removing any existing sshuttle state")
+    remove_existing_sshuttle_state()
+
+    try:
+        logging.info("running sshuttle")
+        run_sshuttle()
+    finally:
+        logging.info("cleaning up any lingering sshuttle state")
+        remove_existing_sshuttle_state()
 
 
 if __name__ == "__main__":
