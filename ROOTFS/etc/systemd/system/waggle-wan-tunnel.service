@@ -1,0 +1,10 @@
+[Unit]
+Description=Waggle WAN Tunnel
+
+[Service]
+Restart=always
+RestartSec=10s
+ExecStart=/usr/bin/waggle_network_watchdog.py
+
+[Install]
+WantedBy=multi-user.target
