@@ -78,12 +78,14 @@ def run_sshuttle(debug=False):
     run([
         "sshuttle",
         *extra_args,
-        "--listen", "127.0.0.1:12300",
+        "--listen", "12300",
         "--ssh-cmd", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
-        "--exclude", f"{bk_ip}/16",   # tunnel cidr
-        "--exclude", "10.31.81.0/24", # lan cidr
-        "--exclude", "10.42.0.0/16",  # k3s pod cidr
-        "--exclude", "10.43.0.0/16",  # k3s svc cidr
+        "--exclude", "127.0.0.1/24",   # localhost
+        "--exclude", "10.31.81.0/24",  # lan
+        "--exclude", "10.42.0.0/16",   # kube pods
+        "--exclude", "10.43.0.0/16",   # kube svcs
+        "--exclude", "172.17.0.1/16",  # docker
+        "--exclude", f"{bk_ip}/16",    # beehive svcs
         "--remote", f"{bk_user}@{bk_host}:{bk_port}",
         "0/0",
     ])
