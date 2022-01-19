@@ -25,13 +25,6 @@ def log_and_run(cmd):
     subprocess.run(cmd, check=True)
 
 
-def make_exclude_args(subnets):
-    args = []
-    for subnet in subnets:
-        args += ["--exclude", subnet]
-    return args
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="enable verbose logging")
@@ -60,12 +53,7 @@ def main():
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
 
-    extra_args = []
-
-    if args.debug:
-        extra_args += ["--verbose"]
-
-    exclude_subnets = [
+    excluded_subnets = [
         "127.0.0.1/24",                   # localhost
         "10.31.81.0/24",                  # lan
         "10.42.0.0/16",                   # kube pods
@@ -76,12 +64,19 @@ def main():
         *get_interface_subnets("wifi0"),  # local wifi
     ]
 
+    extra_args = []
+
+    if args.debug:
+        extra_args += ["--verbose"]
+    
+    for subnet in excluded_subnets:
+        extra_args += ["--exclude", subnet]
+
     log_and_run([
         "sshuttle",
         *extra_args,
         "--listen", "12300",
         "--ssh-cmd", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
-        *make_exclude_args(exclude_subnets),
         "--remote", f"{bk_user}@{bk_host}:{bk_port}",
         "0/0",
     ])
