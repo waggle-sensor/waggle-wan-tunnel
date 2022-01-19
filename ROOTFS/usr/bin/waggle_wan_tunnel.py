@@ -64,22 +64,24 @@ def main():
         *get_interface_subnets("wifi0"),  # local wifi
     ]
 
-    extra_args = []
-
-    if args.debug:
-        extra_args += ["--verbose"]
-    
-    for subnet in excluded_subnets:
-        extra_args += ["--exclude", subnet]
-
-    log_and_run([
-        "sshuttle",
-        *extra_args,
+    cmd_args = [
         "--listen", "12300",
         "--ssh-cmd", f"ssh {ssh_options} -o ServerAliveInterval={ssh_keepalive_interval} -o ServerAliveCountMax={ssh_keepalive_count} -i {bk_key}",
         "--remote", f"{bk_user}@{bk_host}:{bk_port}",
-        "0/0",
-    ])
+    ]
+
+    # program debug flag enables verbose sshuttle logging too
+    if args.debug:
+        cmd_args += ["--verbose"]
+
+    # add excluded subnets
+    for subnet in excluded_subnets:
+        cmd_args += ["--exclude", subnet]
+
+    # route all non-excluded subnets
+    cmd_args += ["0/0"]
+
+    log_and_run(["sshuttle"] + cmd_args)
 
 
 if __name__ == "__main__":
