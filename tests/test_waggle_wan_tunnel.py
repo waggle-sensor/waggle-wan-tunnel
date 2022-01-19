@@ -1,4 +1,4 @@
-from waggle_wan_tunnel import scan_interface_subnets, make_exclude_args
+from waggle_wan_tunnel import scan_interface_subnets
 import unittest
 
 class TestProgram(unittest.TestCase):
@@ -21,13 +21,6 @@ class TestProgram(unittest.TestCase):
        valid_lft 419sec preferred_lft 419sec
 """)
         self.assertEqual(subsets, ["192.168.88.251/16", "192.168.88.252/24"])
-    
-    def test_make_exclude_args(self):
-        args = make_exclude_args(["1.1.1.1/24", "1.2.3.4/16"])
-        self.assertEqual(args, [
-            "--exclude", "1.1.1.1/24",
-            "--exclude", "1.2.3.4/16",
-        ])
 
 
 if __name__ == "__main__":

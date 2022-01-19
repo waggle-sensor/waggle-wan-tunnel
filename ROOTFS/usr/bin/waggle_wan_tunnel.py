@@ -70,7 +70,7 @@ def main():
         "--remote", f"{bk_user}@{bk_host}:{bk_port}",
     ]
 
-    # program debug flag enables verbose sshuttle logging too
+    # --debug flag enables verbose sshuttle logging too
     if args.debug:
         cmd_args += ["--verbose"]
 
