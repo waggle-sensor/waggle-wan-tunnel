@@ -1,0 +1,18 @@
+on:
+  push:
+    tags:
+      - "v*"
+name: Create Release
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build project
+        run: ./build.sh
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: output/*
