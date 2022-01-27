@@ -2,7 +2,7 @@ name: CI/CD
 on: push
 jobs:
   build:
-    name: Build Test
+    name: Build and Release
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
