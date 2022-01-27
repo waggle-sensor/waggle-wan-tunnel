@@ -1,0 +1,4 @@
+#!/bin/bash
+
+systemctl stop waggle-wan-tunnel.service || true
+systemctl disable waggle-wan-tunnel.service || true

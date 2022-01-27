@@ -1,0 +1,9 @@
+#!/bin/bash
+
+case "${1}" in
+  configure)
+    echo "Enabling and starting WAN tunnel."
+    systemctl enable waggle-wan-tunnel.service
+    systemctl start waggle-wan-tunnel.service || true
+    ;;
+esac
