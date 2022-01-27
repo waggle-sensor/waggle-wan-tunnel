@@ -5,4 +5,4 @@ docker run --rm \
   -e DESCRIPTION="Service which managers WAN traffic tunnel." \
   -e "MAINTAINER=sagecontinuum.org" \
   -v "$PWD:/repo" \
-  waggle/waggle-deb-builder $*
+  waggle/waggle-deb-builder:0.1.0
