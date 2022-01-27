@@ -1,0 +1,25 @@
+name: CI/CD
+on: push
+jobs:
+  test:
+    name: Build Test
+    if: startsWith(github.ref, 'refs/tags/') == false
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build deb
+        run: ./build.sh -f
+  release:
+    name: Build Release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build deb
+        run: ./build.sh
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: output/*
