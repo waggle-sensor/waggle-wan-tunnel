@@ -54,14 +54,15 @@ def main():
     bk_user = f"node-{node_id}"
 
     excluded_subnets = [
-        "127.0.0.1/24",                   # localhost
-        "10.31.81.0/24",                  # lan
-        "10.42.0.0/16",                   # kube pods
-        "10.43.0.0/16",                   # kube services
-        "172.17.0.1/16",                  # docker
-        f"{bk_ip}/16",                    # beekeeper
-        *get_interface_subnets("wan0"),   # local wan
-        *get_interface_subnets("wifi0"),  # local wifi
+        "127.0.0.1/24",                    # localhost
+        "10.31.81.0/24",                   # lan
+        "10.42.0.0/16",                    # kube pods
+        "10.43.0.0/16",                    # kube services
+        "172.17.0.1/16",                   # docker
+        f"{bk_ip}/16",                     # beekeeper
+        *get_interface_subnets("wan0"),    # local wan
+        *get_interface_subnets("wifi0"),   # local wifi
+        *get_interface_subnets("modem0"),  # local modem (maybe not needed? for dns?)
     ]
 
     cmd_args = [
