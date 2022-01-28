@@ -42,6 +42,7 @@ def main():
 
     config = ConfigParser()
     config.read("/etc/waggle/config.ini")
+
     section = config["reverse-tunnel"]
     bk_host = section["host"]
     bk_port = section["port"]
@@ -49,9 +50,11 @@ def main():
     ssh_options = section.get("ssh-options", "")
     ssh_keepalive_interval = section.getint("keepalive-interval", 60)
     ssh_keepalive_count = section.getint("keepalive-count", 3)
-
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
+
+    # read additional subnets from waggle-tunnel.exclude. configs must be space separated.
+    excluded_subnets_from_config = config.get("wan-tunnel", "exclude", "").split()
 
     excluded_subnets = [
         "127.0.0.1/24",                    # localhost
@@ -60,7 +63,11 @@ def main():
         "10.43.0.0/16",                    # kube services
         "172.17.0.1/16",                   # docker
         f"{bk_ip}/16",                     # beekeeper
-        "10.0.0.1/8",                      # node build network
+        *excluded_subnets_from_config,     # subnets from config
+        # TODO iface subnets can be dynamic. so, if we really want to do this correctly,
+        # we'd need a way to update them when the iface changes. in the case of a single
+        # connection, sshuttle will reset when the iface resets and pick up the new subnet,
+        # but this is a little trickier with multiple.
         *get_interface_subnets("wan0"),    # local wan
         *get_interface_subnets("wifi0"),   # local wifi
         *get_interface_subnets("modem0"),  # local modem (maybe not needed? for dns?)
@@ -82,6 +89,10 @@ def main():
 
     # route all non-excluded subnets
     cmd_args += ["0/0"]
+
+    # NOTE I am not using the --dns flag as this forwards DNS through the tunnel,
+    # as opposed to excludes. the actual iptables rule added with the flag is:
+    # -t nat -A sshuttle-12300 -j REDIRECT --dest 127.0.0.53/32 -p udp --dport 53 --to-ports 12300 -m ttl ! --ttl 42
 
     log_and_run(["sshuttle"] + cmd_args)
 
