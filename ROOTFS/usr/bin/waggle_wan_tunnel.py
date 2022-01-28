@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-from configparser import ConfigParser, NoSectionError, NoOptionError
+from configparser import ConfigParser
 from pathlib import Path
 from socket import gethostbyname
 import subprocess
@@ -27,10 +27,7 @@ def log_and_run(cmd):
 
 def get_excluded_subnets_from_config(config):
     """get list of space separated subnets from wan-tunnel.exclude."""
-    try:
-        return config.get("wan-tunnel", "exclude", "").split()
-    except (NoSectionError, NoOptionError):
-        return []
+    return config.get("wan-tunnel", "exclude", fallback="").split()
 
 
 def main():
