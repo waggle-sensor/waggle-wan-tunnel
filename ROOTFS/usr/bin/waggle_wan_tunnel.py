@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-from configparser import ConfigParser
+from configparser import ConfigParser, NoSectionError, NoOptionError
 from pathlib import Path
 from socket import gethostbyname
 import subprocess
@@ -23,6 +23,14 @@ def scan_interface_subnets(s):
 def log_and_run(cmd):
     logging.debug("run %s", " \\\n\t".join(map(repr, cmd)))
     subprocess.run(cmd, check=True)
+
+
+def get_excluded_subnets_from_config(config):
+    """get list of space separated subnets from wan-tunnel.exclude."""
+    try:
+        return config.get("wan-tunnel", "exclude", "").split()
+    except (NoSectionError, NoOptionError):
+        return []
 
 
 def main():
@@ -53,8 +61,7 @@ def main():
     bk_ip = gethostbyname(bk_host)
     bk_user = f"node-{node_id}"
 
-    # read additional subnets from waggle-tunnel.exclude. configs must be space separated.
-    excluded_subnets_from_config = config.get("wan-tunnel", "exclude", "").split()
+    excluded_subnets_from_config = get_excluded_subnets_from_config(config)
 
     excluded_subnets = [
         "127.0.0.1/24",                    # localhost
