@@ -98,8 +98,9 @@ def main():
     cmd = ["sshuttle"] + cmd_args
     logging.debug("running %s", " \\\n\t".join(map(repr, cmd)))
 
-    # run sshuttle and wait until connected to indicate that service is ready
+    # run sshuttle
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+        # wait until connected to indicate that service is ready
         while True:
             line = proc.stdout.readline()
             # should only receive this output when unexpectedly terminated
@@ -111,7 +112,13 @@ def main():
                 logging.info("sshuttle is connected. notifying systemd")
                 subprocess.check_call(["systemd-notify", "--ready"])
                 break
-        logging.info("waiting on sshuttle process")
+        # copy remaining output to stdout
+        while True:
+            line = proc.stdout.readline()
+            if line == b"":
+                break
+            sys.stdout.write(line)
+        # wait for sshuttle returncode
         returncode = proc.wait()
 
     sys.exit(returncode)
