@@ -108,7 +108,7 @@ def main():
                 logging.info("sshuttle terminated unexpectedly")
                 break
             # notify systemd that service is ready
-            if b"client: Connected" in line:
+            if b"Connected." in line:
                 logging.info("sshuttle is connected. notifying systemd")
                 subprocess.check_call(["systemd-notify", "--ready"])
                 break

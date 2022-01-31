@@ -5,6 +5,7 @@ Description=Waggle WAN Tunnel
 Type=notify
 Restart=always
 RestartSec=10s
+TimeoutStartSec=15s
 ExecStart=/usr/bin/waggle_wan_tunnel.py
 
 [Install]
