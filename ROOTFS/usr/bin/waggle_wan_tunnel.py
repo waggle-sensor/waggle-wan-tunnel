@@ -99,7 +99,7 @@ def main():
     logging.debug("running %s", " \\\n\t".join(map(repr, cmd)))
 
     # run sshuttle and wait until connected to indicate that service is ready
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
         while True:
             line = proc.stdout.readline()
             # should only receive this output when unexpectedly terminated
