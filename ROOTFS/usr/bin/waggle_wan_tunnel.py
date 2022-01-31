@@ -7,6 +7,7 @@ import sys
 import subprocess
 import re
 import logging
+import os
 
 
 def get_interface_subnets(interface):
@@ -24,6 +25,11 @@ def scan_interface_subnets(s):
 def get_excluded_subnets_from_config(config):
     """get list of space separated subnets from wan-tunnel.exclude."""
     return config.get("wan-tunnel", "exclude", fallback="").split()
+
+
+def notify_ready():
+    pid = os.getpid()
+    subprocess.check_call(["systemd-notify", "--ready", f"--pid={pid}"])
 
 
 def main():
@@ -110,7 +116,7 @@ def main():
             # notify systemd that service is ready
             if b"Connected." in line:
                 logging.info("sshuttle is connected. notifying systemd")
-                subprocess.check_call(["systemd-notify", "--ready"])
+                notify_ready()
                 break
         # copy remaining output to stdout
         while True:
