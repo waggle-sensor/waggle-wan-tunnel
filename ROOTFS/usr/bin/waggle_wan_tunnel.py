@@ -98,7 +98,7 @@ def main():
     cmd = ["sshuttle"] + cmd_args
     logging.debug("running %s", " \\\n\t".join(map(repr, cmd)))
 
-    # run sshuttle
+    # run sshuttle and watch output
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
         # wait until connected to indicate that service is ready
         while True:
