@@ -3,9 +3,11 @@ import argparse
 from configparser import ConfigParser
 from pathlib import Path
 from socket import gethostbyname
+import sys
 import subprocess
 import re
 import logging
+import os
 
 
 def get_interface_subnets(interface):
@@ -18,11 +20,6 @@ def get_interface_subnets(interface):
 
 def scan_interface_subnets(s):
     return re.findall("inet ([0-9/.]+)", s)
-
-
-def log_and_run(cmd):
-    logging.debug("run %s", " \\\n\t".join(map(repr, cmd)))
-    subprocess.run(cmd, check=True)
 
 
 def get_excluded_subnets_from_config(config):
@@ -98,7 +95,34 @@ def main():
     # as opposed to excludes. the actual iptables rule added with the flag is:
     # -t nat -A sshuttle-12300 -j REDIRECT --dest 127.0.0.53/32 -p udp --dport 53 --to-ports 12300 -m ttl ! --ttl 42
 
-    log_and_run(["sshuttle"] + cmd_args)
+    # construct command with args
+    cmd = ["sshuttle"] + cmd_args
+    logging.debug("running %s", " \\\n\t".join(map(repr, cmd)))
+
+    # run sshuttle and watch output
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+        # wait until connected to indicate that service is ready
+        while True:
+            line = proc.stdout.readline()
+            # should only receive this output when unexpectedly terminated
+            if line == b"":
+                logging.info("sshuttle terminated unexpectedly")
+                break
+            # notify systemd that service is ready
+            if b"Connected." in line:
+                logging.info("sshuttle is connected. notifying systemd")
+                subprocess.check_call(["systemd-notify", "--ready"])
+                break
+        # copy remaining output to stdout
+        while True:
+            line = proc.stdout.readline()
+            if line == b"":
+                break
+            sys.stdout.write(line)
+        # wait for sshuttle returncode
+        returncode = proc.wait()
+
+    sys.exit(returncode)
 
 
 if __name__ == "__main__":
