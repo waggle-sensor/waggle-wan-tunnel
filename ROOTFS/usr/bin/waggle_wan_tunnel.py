@@ -27,11 +27,6 @@ def get_excluded_subnets_from_config(config):
     return config.get("wan-tunnel", "exclude", fallback="").split()
 
 
-def notify_ready():
-    pid = os.getpid()
-    subprocess.check_call(["systemd-notify", "--ready", f"--pid={pid}"])
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="enable verbose logging")
@@ -116,7 +111,7 @@ def main():
             # notify systemd that service is ready
             if b"Connected." in line:
                 logging.info("sshuttle is connected. notifying systemd")
-                notify_ready()
+                subprocess.check_call(["systemd-notify", "--ready"])
                 break
         # copy remaining output to stdout
         while True:
