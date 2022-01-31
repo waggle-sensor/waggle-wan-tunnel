@@ -3,6 +3,7 @@ import argparse
 from configparser import ConfigParser
 from pathlib import Path
 from socket import gethostbyname
+import sys
 import subprocess
 import re
 import logging
@@ -98,7 +99,27 @@ def main():
     # as opposed to excludes. the actual iptables rule added with the flag is:
     # -t nat -A sshuttle-12300 -j REDIRECT --dest 127.0.0.53/32 -p udp --dport 53 --to-ports 12300 -m ttl ! --ttl 42
 
-    log_and_run(["sshuttle"] + cmd_args)
+    # construct command with args
+    cmd = ["sshuttle"] + cmd_args
+    logging.debug("running %s", " \\\n\t".join(map(repr, cmd)))
+
+    # run sshuttle and wait until connected to indicate that service is ready
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
+        while True:
+            line = proc.stdout.readline()
+            # should only receive this output when unexpectedly terminated
+            if line == b"":
+                logging.info("sshuttle terminated unexpectedly")
+                break
+            # notify systemd that service is ready
+            if b"client: Connected" in line:
+                logging.info("sshuttle is connected")
+                subprocess.check_call(["systemd-notify", "--ready"])
+                break
+        logging.info("waiting on sshuttle process")
+        returncode = proc.wait()
+
+    sys.exit(returncode)
 
 
 if __name__ == "__main__":

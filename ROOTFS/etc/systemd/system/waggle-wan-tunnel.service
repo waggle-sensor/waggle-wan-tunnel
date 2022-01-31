@@ -2,6 +2,7 @@
 Description=Waggle WAN Tunnel
 
 [Service]
+Type=notify
 Restart=always
 RestartSec=10s
 ExecStart=/usr/bin/waggle_wan_tunnel.py
