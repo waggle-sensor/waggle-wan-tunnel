@@ -21,11 +21,6 @@ def scan_interface_subnets(s):
     return re.findall("inet ([0-9/.]+)", s)
 
 
-def log_and_run(cmd):
-    logging.debug("run %s", " \\\n\t".join(map(repr, cmd)))
-    subprocess.run(cmd, check=True)
-
-
 def get_excluded_subnets_from_config(config):
     """get list of space separated subnets from wan-tunnel.exclude."""
     return config.get("wan-tunnel", "exclude", fallback="").split()
@@ -113,7 +108,7 @@ def main():
                 break
             # notify systemd that service is ready
             if b"client: Connected" in line:
-                logging.info("sshuttle is connected")
+                logging.info("sshuttle is connected. notifying systemd")
                 subprocess.check_call(["systemd-notify", "--ready"])
                 break
         logging.info("waiting on sshuttle process")
