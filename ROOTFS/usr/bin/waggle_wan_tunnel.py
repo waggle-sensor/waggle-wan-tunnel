@@ -58,21 +58,20 @@ def main():
     excluded_subnets_from_config = get_excluded_subnets_from_config(config)
 
     excluded_subnets = [
-        "127.0.0.1/24",                    # localhost
-        "10.31.81.0/24",                   # lan
-        "10.42.0.0/16",                    # kube pods
-        "10.43.0.0/16",                    # kube services
-        "172.17.0.1/16",                   # docker
-        f"{bk_ip}/16",                     # beekeeper
-        *excluded_subnets_from_config,     # subnets from config
-        # TODO iface subnets can be dynamic. so, if we really want to do this correctly,
-        # we'd need a way to update them when the iface changes. in the case of a single
-        # connection, sshuttle will reset when the iface resets and pick up the new subnet,
-        # but this is a little trickier with multiple.
-        *get_interface_subnets("wan0"),    # local wan
-        *get_interface_subnets("wifi0"),   # local wifi
-        *get_interface_subnets("modem0"),  # local modem (maybe not needed? for dns?)
+        "127.0.0.1/24",                 # localhost
+        "10.0.0.0/8",                   # class A networks
+        "172.16.0.0/12",                # class B networks
+        "192.168.0.0/16",               # class C networks
+        f"{bk_ip}/16",                  # beekeeper
+        *excluded_subnets_from_config,  # additional subnets from config
     ]
+
+    # NOTE the following important networks are excluded via the class A, B, C rules above:
+    # 1. kubernetes pod network is 10.42.0.0/16 (class A)
+    # 2. kubernetes service network is 10.43.0.0/16 (class A)
+    # 3. docker network is 172.17.0.1/16 (class B)
+    # 4. lan network is 10.31.81.0/24 (class A)
+    # 5. wan0 and wifi0 networks are hopefully class A, B or C
 
     cmd_args = [
         "--listen", "12300",
