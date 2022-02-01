@@ -84,7 +84,7 @@ def main():
         cmd_args += ["--verbose"]
 
     # add excluded subnets
-    for subnet in excluded_subnets:
+    for subnet in sorted(set(excluded_subnets)):
         cmd_args += ["--exclude", subnet]
 
     # route all non-excluded subnets
